@@ -3,10 +3,6 @@ import { CommonEntity } from './common.entity';
 import { ApiResponseProperty } from '@nestjs/swagger';
 import { UserLoginInformation } from './user-login-infomations.entity';
 import { Notification } from './notification.entity';
-import { Cart } from './cart.entity';
-import { Address } from './address.entity';
-import { PaymentMethod } from './payment-method.entity';
-import { Shipping } from './shipping.entity';
 import { UserRole, UserStatus } from 'src/common/enums/user.enum';
 
 @Entity('users')
@@ -73,16 +69,4 @@ export class User extends CommonEntity {
 
   @OneToMany(() => Notification, (notification) => notification.user)
   notifications: Notification[];
-
-  @OneToOne(() => Cart, (cart) => cart.user)
-  cart: Cart;
-
-  @OneToMany(() => Address, (address) => address.user)
-  addresses: Address[];
-
-  @OneToMany(() => PaymentMethod, (paymentMethod) => paymentMethod.user)
-  payment_methods: PaymentMethod[];
-
-  @OneToMany(() => Shipping, (shipping) => shipping.user)
-  shippings: Shipping[];
 }
