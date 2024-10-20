@@ -1,0 +1,37 @@
+version: '3.8'
+services:
+  db:
+    image: postgres
+    container_name: pgdb
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    environment:
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_DB: "${POSTGRES_DB}"
+      POSTGRES_USER: "${POSTGRES_USER}"
+    volumes:
+      - ./pgdb:/var/lib/postgresql/data
+    networks:
+      - video-share-app
+  node-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: video-share-api
+    command: yarn start:dev
+    ports:
+      - "${APP_PORT}:9000"
+    restart: unless-stopped
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+      # - /app/node_modules
+    env_file:
+      - .env
+    networks:
+      - video-share-app
+volumes:
+  pgdb:
+networks:
+  video-share-app:
