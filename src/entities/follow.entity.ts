@@ -8,11 +8,10 @@ import {
 } from 'typeorm';
 import { ApiResponseProperty } from '@nestjs/swagger';
 import { User } from './user.entity';
-import { NotificationType } from 'src/common/enums/notification.enum';
 import { Type } from 'class-transformer';
 
-@Entity({ name: 'notifications' })
-export class Notification {
+@Entity({ name: 'follows' })
+export class Follow {
   @ApiResponseProperty({ type: Number })
   @PrimaryGeneratedColumn({ type: 'int' })
   @Type(() => Number)
@@ -20,27 +19,11 @@ export class Notification {
 
   @ApiResponseProperty({ type: Number })
   @Column({ type: Number, nullable: false })
-  user_id: number;
-
-  @ApiResponseProperty({ type: NotificationType })
-  @Column({
-    type: 'enum',
-    enum: NotificationType,
-    nullable: false,
-  })
-  type: NotificationType;
+  follower_id: number;
 
   @ApiResponseProperty({ type: Number })
-  @Column({ type: Number, nullable: true })
-  related_id: number;
-
-  @ApiResponseProperty({ type: Number })
-  @Column({ type: Number, nullable: true })
-  actor_id: number;
-
-  @ApiResponseProperty({ type: Boolean })
-  @Column({ type: Boolean, nullable: false })
-  is_read: boolean;
+  @Column({ type: Number, nullable: false })
+  followed_id: number;
 
   @ApiResponseProperty({ type: Date })
   @CreateDateColumn({
@@ -50,9 +33,15 @@ export class Notification {
   created_at: Date;
 
   // relation
-  @ManyToOne(() => User, (user) => user.notifications, {
+  @ManyToOne(() => User, (user) => user.follower, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'user_id' })
-  user: User;
+  @JoinColumn({ name: 'follower_id' })
+  follower: User;
+
+  @ManyToOne(() => User, (user) => user.followed, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'followed_id' })
+  followed: User;
 }

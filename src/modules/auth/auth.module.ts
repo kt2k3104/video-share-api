@@ -6,7 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { User } from 'src/entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserLoginInformation } from 'src/entities/user-login-infomations.entity';
-import { UserRepository } from 'src/repositories/user.repositories';
+import { UserRepository } from 'src/repositories/user.repository';
 import { UserLoginInformationRepository } from 'src/repositories/user-login-infomation.repository';
 import { JwtStrategy } from 'src/common/strategies/jwt.strategy';
 import { AdminJwtStrategy } from 'src/common/strategies/admin-jwt.trategy';

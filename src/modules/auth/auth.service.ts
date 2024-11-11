@@ -1,5 +1,5 @@
 import { UserLoginInformationRepository } from 'src/repositories/user-login-infomation.repository';
-import { UserRepository } from './../../repositories/user.repositories';
+import { UserRepository } from '../../repositories/user.repository';
 import {
   BadRequestException,
   Injectable,
@@ -32,11 +32,10 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
+  //register
   async register(registerReq: RegisterReq) {
     const user = await this.userRepository.findOne({
-      where: [
-        { email: registerReq.email, phone_number: registerReq.phone_number },
-      ],
+      where: [{ email: registerReq.email }],
     });
 
     if (user) {
@@ -53,9 +52,10 @@ export class AuthService {
 
     const newUser = await this.userRepository.save({
       ...registerReq,
+      full_name: registerReq.username,
+      username: '@' + registerReq.username.replace(/\s+/g, ''),
       hash_password: hashPass,
-      role:
-        registerReq.role === UserRole.SELLER ? UserRole.SELLER : UserRole.BUYER,
+      role: UserRole.USER,
       status: UserStatus.INACTIVE,
     });
 
@@ -73,7 +73,7 @@ export class AuthService {
 
       this.mailerService.sendMail({
         to: newUser.email,
-        subject: 'Welcome to E-commerce App',
+        subject: 'Welcome to Video Share App',
         template: './verify',
         context: {
           name: newUser.full_name,
@@ -86,6 +86,7 @@ export class AuthService {
     );
   }
 
+  //verify account
   async verifyAccount(user_id: number, token: string) {
     const user = await this.userRepository.findOne({ where: { id: user_id } });
 
@@ -107,6 +108,7 @@ export class AuthService {
     return new SuccessRes('Verify account successfully');
   }
 
+  //forgot password
   async forgotPassword(email: string) {
     const user = await this.userRepository.findByEmail(email);
     if (!user) {
@@ -143,6 +145,7 @@ export class AuthService {
     return new SuccessRes('Please check your email to reset password');
   }
 
+  //reset password
   async resetPassword({ email, token, password }: ResetPasswordReq) {
     const { email: emailToken, user_id } = await this.jwtService.verify(token, {
       secret: this.configService.get('app.token_jwt_secret_key'),
@@ -175,6 +178,7 @@ export class AuthService {
     return new SuccessRes('Reset password successfully');
   }
 
+  //login
   async login({ email, password }: LoginReq): Promise<any> {
     // check email
     const user = await this.userRepository
@@ -213,6 +217,7 @@ export class AuthService {
     };
   }
 
+  //logout
   async logout(user_id: string) {
     await this.userLoginInfoRepository.update(
       { user_id: parseInt(user_id) },
@@ -221,6 +226,7 @@ export class AuthService {
     return new SuccessRes('Logout successfully');
   }
 
+  //change password
   async changePassword(
     user_id: number,
     oldPassword: string,
@@ -261,6 +267,7 @@ export class AuthService {
     }
   }
 
+  //refresh token
   async refreshToken(refreshToken: string): Promise<LoginRes> {
     const userLoginInfo =
       await this.userLoginInfoRepository.findOneByRefreshToken(refreshToken);

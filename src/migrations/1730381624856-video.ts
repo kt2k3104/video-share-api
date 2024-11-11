@@ -1,11 +1,15 @@
-import { UserRole, UserStatus } from 'src/common/enums/user.enum';
-import { MigrationInterface, QueryRunner, Table } from 'typeorm';
+import {
+  MigrationInterface,
+  QueryRunner,
+  Table,
+  TableForeignKey,
+} from 'typeorm';
 
-export class User1725788610312 implements MigrationInterface {
+export class Video1730381624856 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
-        name: 'users',
+        name: 'videos',
         columns: [
           {
             name: 'id',
@@ -13,50 +17,52 @@ export class User1725788610312 implements MigrationInterface {
             isPrimary: true,
           },
           {
-            name: 'full_name',
-            type: 'varchar',
-            length: '100',
+            name: 'user_id',
+            type: 'int',
             isNullable: false,
           },
           {
-            name: 'username',
-            type: 'varchar',
-            length: '50',
-            isNullable: false,
-          },
-          {
-            name: 'email',
-            type: 'varchar',
-            length: '100',
-            isNullable: false,
-          },
-          {
-            name: 'hash_password',
+            name: 'title',
             type: 'varchar',
             length: '255',
-            isNullable: false,
+            isNullable: true,
           },
           {
-            name: 'avatar_url',
+            name: 'description',
             type: 'varchar',
-            length: '225',
             isNullable: true,
           },
           {
-            name: 'bio',
-            type: 'text',
-            isNullable: true,
-          },
-          {
-            name: 'role',
-            type: 'enum',
-            enum: Object.values(UserRole),
+            name: 'url',
+            type: 'varchar',
             isNullable: false,
           },
           {
-            name: 'status',
-            type: 'enum',
-            enum: Object.values(UserStatus),
+            name: 'thumbnail_url',
+            type: 'varchar',
+            isNullable: false,
+          },
+          {
+            name: 'public_id',
+            type: 'varchar',
+            isNullable: false,
+          },
+          {
+            name: 'likes_count',
+            type: 'int',
+            default: 0,
+            isNullable: false,
+          },
+          {
+            name: 'comments_count',
+            type: 'int',
+            default: 0,
+            isNullable: false,
+          },
+          {
+            name: 'views_count',
+            type: 'int',
+            default: 0,
             isNullable: false,
           },
           {
@@ -75,9 +81,18 @@ export class User1725788610312 implements MigrationInterface {
         ],
       }),
     );
+    await queryRunner.createForeignKey(
+      'videos',
+      new TableForeignKey({
+        columnNames: ['user_id'],
+        referencedColumnNames: ['id'],
+        referencedTableName: 'users',
+        onDelete: 'CASCADE',
+      }),
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropTable('users');
+    await queryRunner.dropTable('videos');
   }
 }

@@ -9,6 +9,10 @@ import { AuthModule } from './modules/auth/auth.module';
 import { MailerModule, PugAdapter } from '@nest-modules/mailer';
 import { join } from 'path';
 import { UserModule } from './modules/user/user.module';
+import { Video } from './entities/video.entity';
+import { VideoModule } from './modules/video/video.module';
+import { CommentModule } from './modules/comment/comment.module';
+import { PusherModule } from './modules/pusher/pusher.module';
 
 @Module({
   imports: [
@@ -54,8 +58,22 @@ import { UserModule } from './modules/user/user.module';
       }),
       inject: [ConfigService],
     }),
+    PusherModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => {
+        return {
+          app_id: configService.get('pusher.app_id'),
+          key: configService.get('pusher.key'),
+          secret: configService.get('pusher.secret'),
+          cluster: configService.get('pusher.cluster'),
+        };
+      },
+      inject: [ConfigService],
+    }),
     AuthModule,
     UserModule,
+    VideoModule,
+    CommentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -9,6 +9,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
   UploadedFile,
   UseGuards,
@@ -39,6 +40,7 @@ export class UserController {
     private cloudinaryService: CloudinaryService,
   ) {}
 
+  // Get all users
   @ApiResponse({
     status: HttpStatus.OK,
   })
@@ -54,6 +56,7 @@ export class UserController {
     return await this.userService.getAllUsers();
   }
 
+  // Get my profile
   @ApiResponse({
     status: HttpStatus.OK,
   })
@@ -69,6 +72,7 @@ export class UserController {
     return user;
   }
 
+  // Update my profile
   @ApiResponse({
     status: HttpStatus.OK,
   })
@@ -84,6 +88,7 @@ export class UserController {
     return await this.userService.updateProfile(user.id, data);
   }
 
+  // Upload avatar
   @ApiResponse({
     status: HttpStatus.OK,
   })
@@ -113,13 +118,13 @@ export class UserController {
     }
 
     try {
-      const cloudFile = await this.cloudinaryService.uploadFile(file);
+      const cloudFile = await this.cloudinaryService.uploadImage(file);
 
       if (req.user.avatar) {
-        await this.cloudinaryService.destroyFile(req.user.avatar);
+        await this.cloudinaryService.destroyFileImage(req.user.avatar);
       }
       await this.userService.updateProfile(req.user.id, {
-        avatar: cloudFile.secure_url,
+        avatar_url: cloudFile.secure_url,
       });
       return new SuccessRes('Upload avatar successfully');
     } catch (error) {
@@ -127,6 +132,7 @@ export class UserController {
     }
   }
 
+  // Get other profile
   @ApiResponse({
     status: HttpStatus.OK,
   })
@@ -142,6 +148,7 @@ export class UserController {
     return await this.userService.getOtherProfile(id);
   }
 
+  // Get notification
   @ApiResponse({
     status: HttpStatus.OK,
   })
@@ -157,6 +164,7 @@ export class UserController {
     return await this.userService.getNotification(user.id);
   }
 
+  // Set is read notifications
   @ApiResponse({
     status: HttpStatus.OK,
   })
@@ -172,6 +180,7 @@ export class UserController {
     return await this.userService.setIsReadNotification(user.id);
   }
 
+  // Set is read notification with id
   @ApiResponse({
     status: HttpStatus.OK,
   })
@@ -188,5 +197,83 @@ export class UserController {
     @Param('id') id: number,
   ) {
     return await this.userService.setIsReadNotificationWithId(user.id, id);
+  }
+
+  // search users
+  @ApiResponse({
+    status: HttpStatus.OK,
+  })
+  @ApiOperation({
+    operationId: 'search-users',
+    summary: 'Search users',
+    description: 'Search users',
+  })
+  @Get('search')
+  async searchUsers(@Query('keyword') keyword: string) {
+    return await this.userService.searchUsers(keyword);
+  }
+
+  // follow user
+  @ApiResponse({
+    status: HttpStatus.OK,
+  })
+  @ApiOperation({
+    operationId: 'follow-user',
+    summary: 'Follow user',
+    description: 'Follow user',
+  })
+  @Post(':id/follow')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  async followUser(@CurrentUser() user: User, @Param('id') id: number) {
+    return await this.userService.followUser(user.id, id);
+  }
+
+  // unfollow user
+  @ApiResponse({
+    status: HttpStatus.OK,
+  })
+  @ApiOperation({
+    operationId: 'unfollow-user',
+    summary: 'Unfollow user',
+    description: 'Unfollow user',
+  })
+  @Post(':id/unfollow')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  async unfollowUser(@CurrentUser() user: User, @Param('id') id: number) {
+    return await this.userService.unfollowUser(user.id, id);
+  }
+
+  // get my followers
+  @ApiResponse({
+    status: HttpStatus.OK,
+  })
+  @ApiOperation({
+    operationId: 'get-my-followers',
+    summary: 'Get my followers',
+    description: 'Get my followers',
+  })
+  @Get('me/followers')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  async getMyFollowers(@CurrentUser() user: User) {
+    return await this.userService.getMyFollowers(user.id);
+  }
+
+  // get my followings
+  @ApiResponse({
+    status: HttpStatus.OK,
+  })
+  @ApiOperation({
+    operationId: 'get-my-followings',
+    summary: 'Get my followings',
+    description: 'Get my followings',
+  })
+  @Get('me/followings')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  async getMyFollowings(@CurrentUser() user: User) {
+    return await this.userService.getMyFollowings(user.id);
   }
 }

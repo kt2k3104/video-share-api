@@ -24,6 +24,7 @@ import { RefreshTokenReq } from './dto/refresh-token.req';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  //register
   @ApiResponse({
     status: HttpStatus.OK,
     type: SuccessRes,
@@ -38,6 +39,7 @@ export class AuthController {
     return await this.authService.register(registerReq);
   }
 
+  //verify account
   @ApiResponse({
     status: HttpStatus.OK,
     type: SuccessRes,
@@ -53,6 +55,7 @@ export class AuthController {
     return await this.authService.verifyAccount(user_id, token);
   }
 
+  //forgot password
   @ApiResponse({
     status: HttpStatus.OK,
     type: SuccessRes,
@@ -68,6 +71,7 @@ export class AuthController {
     return await this.authService.forgotPassword(email);
   }
 
+  //reset password
   @ApiResponse({
     status: HttpStatus.OK,
     type: SuccessRes,
@@ -83,6 +87,7 @@ export class AuthController {
     return await this.authService.resetPassword(request);
   }
 
+  //login
   @ApiResponse({
     status: HttpStatus.OK,
     type: LoginRes,
@@ -98,6 +103,7 @@ export class AuthController {
     return await this.authService.login(request);
   }
 
+  //logout
   @ApiResponse({
     status: HttpStatus.OK,
     type: SuccessRes,
@@ -113,6 +119,7 @@ export class AuthController {
     return await this.authService.logout(user_id);
   }
 
+  //change password
   @ApiResponse({
     status: HttpStatus.OK,
     type: SuccessRes,
@@ -132,6 +139,7 @@ export class AuthController {
     );
   }
 
+  //refresh token
   @ApiResponse({
     status: HttpStatus.OK,
     type: LoginRes,

@@ -1,3 +1,4 @@
+import { NotificationType } from 'src/common/enums/notification.enum';
 import {
   MigrationInterface,
   QueryRunner,
@@ -13,21 +14,27 @@ export class Notification1725790823395 implements MigrationInterface {
         columns: [
           { name: 'id', type: 'serial', isPrimary: true },
           { name: 'user_id', type: 'int', isNullable: false },
-          { name: 'content', type: 'varchar', isNullable: false },
-          { name: 'title', type: 'varchar', isNullable: false },
+          {
+            name: 'type',
+            type: 'enum',
+            enum: Object.values(NotificationType),
+            isNullable: false,
+          },
+          { name: 'related_id', type: 'int', isNullable: true },
+          { name: 'actor_id', type: 'int', isNullable: false },
           {
             name: 'created_at',
             type: 'timestamp with time zone',
             default: 'CURRENT_TIMESTAMP',
             isNullable: false,
           },
-          {
-            name: 'updated_at',
-            type: 'timestamp with time zone',
-            default: 'CURRENT_TIMESTAMP',
-            onUpdate: 'CURRENT_TIMESTAMP',
-            isNullable: true,
-          },
+          // {
+          //   name: 'updated_at',
+          //   type: 'timestamp with time zone',
+          //   default: 'CURRENT_TIMESTAMP',
+          //   onUpdate: 'CURRENT_TIMESTAMP',
+          //   isNullable: true,
+          // },
         ],
       }),
     );

@@ -8,11 +8,11 @@ import {
 } from 'typeorm';
 import { ApiResponseProperty } from '@nestjs/swagger';
 import { User } from './user.entity';
-import { NotificationType } from 'src/common/enums/notification.enum';
+import { Video } from './video.entity';
 import { Type } from 'class-transformer';
 
-@Entity({ name: 'notifications' })
-export class Notification {
+@Entity('reports')
+export class Report {
   @ApiResponseProperty({ type: Number })
   @PrimaryGeneratedColumn({ type: 'int' })
   @Type(() => Number)
@@ -20,27 +20,15 @@ export class Notification {
 
   @ApiResponseProperty({ type: Number })
   @Column({ type: Number, nullable: false })
+  video_id: number;
+
+  @ApiResponseProperty({ type: Number })
+  @Column({ type: Number, nullable: false })
   user_id: number;
 
-  @ApiResponseProperty({ type: NotificationType })
-  @Column({
-    type: 'enum',
-    enum: NotificationType,
-    nullable: false,
-  })
-  type: NotificationType;
-
-  @ApiResponseProperty({ type: Number })
-  @Column({ type: Number, nullable: true })
-  related_id: number;
-
-  @ApiResponseProperty({ type: Number })
-  @Column({ type: Number, nullable: true })
-  actor_id: number;
-
-  @ApiResponseProperty({ type: Boolean })
-  @Column({ type: Boolean, nullable: false })
-  is_read: boolean;
+  @ApiResponseProperty({ type: String })
+  @Column({ type: 'text', nullable: false })
+  reason: string;
 
   @ApiResponseProperty({ type: Date })
   @CreateDateColumn({
@@ -49,10 +37,16 @@ export class Notification {
   })
   created_at: Date;
 
-  // relation
-  @ManyToOne(() => User, (user) => user.notifications, {
+  //relation
+  @ManyToOne(() => User, (user) => user.reports, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @ManyToOne(() => Video, (video) => video.reports, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'video_id' })
+  video: Video;
 }

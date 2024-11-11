@@ -34,6 +34,28 @@ export const filterImageConfig =
     }
   };
 
+export const filterVideoConfig =
+  (maxFileSize: number = 100 * 1024 * 1024) =>
+  (
+    req: any,
+    file: Express.Multer.File,
+    cb: (error: Error, acceptFile: boolean) => void,
+  ) => {
+    const allowedExtensions = ['.mp4', '.avi', '.mov'];
+    const extension = extname(file.originalname).toLowerCase();
+
+    if (!allowedExtensions.includes(extension)) {
+      req.fileValidationError =
+        'Invalid file type. Only MP4, AVI, and MOV are allowed.';
+      cb(null, false);
+    } else if (parseInt(req.headers['content-length']) > maxFileSize) {
+      req.fileValidationError = 'File size is too large. Max size is 100MB.';
+      cb(null, false);
+    } else {
+      cb(null, true);
+    }
+  };
+
 interface MulterFile {
   fieldname: string;
   originalname: string;

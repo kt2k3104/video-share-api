@@ -10,12 +10,8 @@ import {
 export class RegisterReq {
   @ApiProperty()
   @IsNotEmpty()
-  @MaxLength(100)
-  full_name: string;
-
-  @ApiProperty()
-  @IsPhoneNumber('VN')
-  phone_number: string;
+  @MaxLength(50)
+  username: string;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -26,8 +22,4 @@ export class RegisterReq {
   @IsNotEmpty()
   @MinLength(6)
   password: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  role: string;
 }
