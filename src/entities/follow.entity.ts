@@ -33,13 +33,13 @@ export class Follow {
   created_at: Date;
 
   // relation
-  @ManyToOne(() => User, (user) => user.follower, {
+  @ManyToOne(() => User, (user) => user.followers, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'follower_id' })
   follower: User;
 
-  @ManyToOne(() => User, (user) => user.followed, {
+  @ManyToOne(() => User, (user) => user.followings, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'followed_id' })

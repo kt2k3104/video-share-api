@@ -54,8 +54,6 @@ export class VideoController {
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @Get()
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   async getPaginatedVideos(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
@@ -73,8 +71,6 @@ export class VideoController {
     description: 'Retrieve video by id',
   })
   @Get(':id')
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   async getVideoById(@Param('id', ParseIntPipe) id: number) {
     return await this.videoService.getVideoById(id);
   }
@@ -117,6 +113,8 @@ export class VideoController {
         file,
         startTime ? parseInt(startTime) : 0,
       );
+      console.log(cloudFile);
+
       return await this.videoService.createVideo(
         {
           user_id: req.user.id,
@@ -211,8 +209,6 @@ export class VideoController {
     description: 'Retrieve video by user id',
   })
   @Get('user/:user_id')
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   async getVideoByUserId(@Param('user_id', ParseIntPipe) userId: number) {
     return await this.videoService.getVideoByUserId(userId);
   }

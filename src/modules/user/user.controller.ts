@@ -69,7 +69,10 @@ export class UserController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   async getProfile(@CurrentUser() user: User) {
-    return user;
+    return {
+      ...new SuccessRes('Get my profile successfully!'),
+      data: { user },
+    };
   }
 
   // Update my profile
@@ -146,6 +149,22 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   async getOtherProfile(@Param('id') id: number) {
     return await this.userService.getOtherProfile(id);
+  }
+
+  // Get user by username
+  @ApiResponse({
+    status: HttpStatus.OK,
+  })
+  @ApiOperation({
+    operationId: 'get-user-by-username',
+    summary: 'Get user by username',
+    description: 'Get user by username',
+  })
+  @Get('username/:username')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  async getUserByUsername(@Param('username') username: string) {
+    return await this.userService.getUserByUsername(username);
   }
 
   // Get notification

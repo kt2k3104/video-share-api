@@ -60,10 +60,10 @@ export class User extends CommonEntity {
   videos: Video[];
 
   @OneToMany(() => Follow, (follow) => follow.follower)
-  follower: Follow[];
+  followers: Follow[];
 
   @OneToMany(() => Follow, (follow) => follow.followed)
-  followed: Follow[];
+  followings: Follow[];
 
   @OneToMany(() => Comment, (comment) => comment.user)
   comments: Comment[];

@@ -4,7 +4,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const pusherConfig = {
-  app_id: process.env.PUSHER_APP_ID,
+  app_id: process.env.PUSHER_API_ID,
   key: process.env.PUSHER_KEY,
   secret: process.env.PUSHER_SECRET,
   cluster: process.env.PUSHER_CLUSTER,

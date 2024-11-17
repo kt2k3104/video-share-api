@@ -34,16 +34,24 @@ export class AuthService {
 
   //register
   async register(registerReq: RegisterReq) {
-    const user = await this.userRepository.findOne({
+    const user1 = await this.userRepository.findOne({
       where: [{ email: registerReq.email }],
     });
 
-    if (user) {
+    if (user1) {
       const errMessage =
-        user.email === registerReq.email
+        user1.email === registerReq.email
           ? 'Email already exists'
           : 'Phone number already exists';
       throw new BadRequestException(errMessage);
+    }
+
+    const user2 = await this.userRepository.findOne({
+      where: [{ username: '@' + registerReq.username }],
+    });
+
+    if (user2) {
+      throw new BadRequestException('Username already exists');
     }
 
     const hashPass = hashPassword(registerReq.password);
@@ -69,7 +77,8 @@ export class AuthService {
       const appPort = this.configService.get('app.port');
       const appPrefix = this.configService.get('app.prefix');
       const appVersion = this.configService.get('app.version');
-      const verifyUrl = `http://${appDomain}:${appPort}/${appPrefix}/${appVersion}/auth/verify?user_id=${newUser.id.toString()}&token=${hashed}`;
+      // const verifyUrl = `http://${appDomain}:${appPort}/${appPrefix}/${appVersion}/auth/verify?user_id=${newUser.id.toString()}&token=${hashed}`;
+      const verifyUrl = `http://localhost:3000/auth/verify?user_id=${newUser.id.toString()}&token=${hashed}`;
 
       this.mailerService.sendMail({
         to: newUser.email,
@@ -188,13 +197,17 @@ export class AuthService {
       .getOne();
 
     if (!user) {
-      throw new BadRequestException('Email is not registred.');
+      throw new BadRequestException('Email is not registed.');
     }
 
     // match password
     const checkPass = compare(password, user.hash_password);
     if (!checkPass) {
       throw new BadRequestException('Password is not correct');
+    }
+    // check is acctive account
+    if (user.status === 'inactive') {
+      throw new BadRequestException('Account is not verified');
     }
 
     const tokens = await this.issueToken({

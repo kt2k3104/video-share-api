@@ -49,9 +49,9 @@ export class AuthController {
     summary: 'Verify account',
     description: 'Verify account',
   })
-  @Get('verify')
+  @Post('verify')
   @UsePipes(ValidationPipe)
-  async verify(@Query() { user_id, token }: VerifyQuery) {
+  async verify(@Body() { user_id, token }: VerifyQuery) {
     return await this.authService.verifyAccount(user_id, token);
   }
 

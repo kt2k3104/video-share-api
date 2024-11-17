@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { SuccessRes } from 'src/common/types/response';
 import { FollowRepository } from 'src/repositories/follow.repository';
 import { NotificationRepository } from 'src/repositories/notification.repository';
@@ -17,7 +17,12 @@ export class UserService {
   ) {}
 
   async getAllUsers() {
-    return this.userRepository.find();
+    const Users = await this.userRepository.find();
+
+    return {
+      ...new SuccessRes('Get all users successfully!'),
+      data: { Users },
+    };
   }
 
   async updateProfile(userId: number, data: any) {
@@ -27,18 +32,82 @@ export class UserService {
   }
 
   async getOtherProfile(userId: number) {
-    return this.userRepository.findOne({
+    const user = await this.userRepository.findOne({
       where: {
         id: userId,
       },
     });
+
+    return {
+      ...new SuccessRes('Get profile user successfully!'),
+      data: { ...user },
+    };
+  }
+
+  // get user by username
+  async getUserByUsername(username: string) {
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.videos', 'videos') // Lấy danh sách video của user
+      .where('user.username = :username', { username })
+      .select([
+        'user.id', // Chỉ chọn các trường cần thiết từ bảng user
+        'user.full_name',
+        'user.username',
+        'user.avatar_url',
+        'user.bio',
+        'videos.id', // Chọn các trường từ bảng videos
+        'videos.title',
+        'videos.description',
+        'videos.url',
+        'videos.thumbnail_url',
+        'videos.likes_count',
+        'videos.comments_count',
+        'videos.views_count',
+        'videos.created_at',
+      ])
+      .getOne();
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Lấy danh sách followers (những user follow user hiện tại)
+    const followers = await this.userRepository
+      .createQueryBuilder('user')
+      .innerJoin('follows', 'f', 'f.follower_id = user.id')
+      .where('f.followed_id = :id', { id: user.id })
+      .select(['user.id', 'user.username', 'user.full_name', 'user.avatar_url'])
+      .getMany();
+
+    // Lấy danh sách followings (những user mà user hiện tại đã follow)
+    const followings = await this.userRepository
+      .createQueryBuilder('user')
+      .innerJoin('follows', 'f', 'f.followed_id = user.id')
+      .where('f.follower_id = :id', { id: user.id })
+      .select(['user.id', 'user.username', 'user.full_name', 'user.avatar_url'])
+      .getMany();
+
+    return {
+      ...new SuccessRes('Get user by username successfully!'),
+      data: {
+        ...user,
+        followers,
+        followings,
+      },
+    };
   }
 
   async getNotification(userId: number) {
-    return this.notificationRepository.find({
+    const noti = await this.notificationRepository.find({
       where: { user_id: userId },
       order: { created_at: 'DESC', is_read: 'ASC' },
     });
+
+    return {
+      ...new SuccessRes('Get notification successfully!'),
+      data: { noti },
+    };
   }
 
   async setIsReadNotification(userId: number) {
@@ -75,6 +144,18 @@ export class UserService {
 
   // follow user
   async followUser(userId: number, followId: number) {
+    if (userId === followId) {
+      throw new NotFoundException('You cannot follow yourself');
+    }
+    const follow = await this.followRepository.findOne({
+      where: {
+        follower_id: userId,
+        followed_id: followId,
+      },
+    });
+    if (follow) {
+      throw new NotFoundException('You have already followed this user');
+    }
     await this.followRepository.save({
       follower_id: userId,
       followed_id: followId,
@@ -115,15 +196,35 @@ export class UserService {
 
   // get my followers
   async getMyFollowers(userId: number) {
-    return this.followRepository.find({
-      where: { followed_id: userId },
-    });
+    const followers = await this.userRepository
+      .createQueryBuilder('user')
+      .innerJoin('follows', 'f', 'f.follower_id = user.id')
+      .where('f.followed_id = :id', { id: userId })
+      .select(['user.id', 'user.username', 'user.full_name', 'user.avatar_url'])
+      .getMany();
+
+    return {
+      ...new SuccessRes('Get my follower successfully'),
+      data: {
+        followers,
+      },
+    };
   }
 
   // get my followings
   async getMyFollowings(userId: number) {
-    return this.followRepository.find({
-      where: { follower_id: userId },
-    });
+    const followings = await this.userRepository
+      .createQueryBuilder('user')
+      .innerJoin('follows', 'f', 'f.followed_id = user.id')
+      .where('f.follower_id = :id', { id: userId })
+      .select(['user.id', 'user.username', 'user.full_name', 'user.avatar_url'])
+      .getMany();
+
+    return {
+      ...new SuccessRes('Get my followings successfully'),
+      data: {
+        followings,
+      },
+    };
   }
 }
