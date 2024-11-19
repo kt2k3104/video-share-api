@@ -28,7 +28,10 @@ export class UserService {
   async updateProfile(userId: number, data: any) {
     await this.userRepository.update({ id: userId }, data);
 
-    return new SuccessRes('Update profile successfully');
+    return {
+      ...new SuccessRes('Update profile successfully'),
+      data: data,
+    };
   }
 
   async getOtherProfile(userId: number) {
@@ -186,6 +189,15 @@ export class UserService {
 
   // unfollow user
   async unfollowUser(userId: number, followId: number) {
+    const follow = await this.followRepository.findOne({
+      where: {
+        follower_id: userId,
+        followed_id: followId,
+      },
+    });
+    if (!follow) {
+      throw new NotFoundException('You have not followed this user');
+    }
     await this.followRepository.delete({
       follower_id: userId,
       followed_id: followId,

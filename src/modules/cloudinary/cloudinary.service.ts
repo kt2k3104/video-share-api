@@ -35,10 +35,10 @@ export class CloudinaryService {
         eager: [
           {
             format: 'jpg',
-            width: 1280,
-            height: 720,
-            crop: 'pad',
-            background: 'black',
+            width: 1080,
+            height: 1440,
+            crop: 'fill',
+            bgravity: 'auto',
             start_offset: startTime,
           },
         ],
@@ -64,10 +64,10 @@ export class CloudinaryService {
         eager: [
           {
             format: 'jpg',
-            width: 1280,
-            height: 720,
-            crop: 'pad',
-            background: 'black',
+            width: 1080,
+            height: 1440,
+            crop: 'fill',
+            bgravity: 'auto',
             start_offset: startOffset,
           },
         ],

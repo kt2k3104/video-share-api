@@ -28,13 +28,6 @@ export class Notification1725790823395 implements MigrationInterface {
             default: 'CURRENT_TIMESTAMP',
             isNullable: false,
           },
-          // {
-          //   name: 'updated_at',
-          //   type: 'timestamp with time zone',
-          //   default: 'CURRENT_TIMESTAMP',
-          //   onUpdate: 'CURRENT_TIMESTAMP',
-          //   isNullable: true,
-          // },
         ],
       }),
     );

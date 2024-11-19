@@ -73,11 +73,6 @@ export class AuthService {
 
     if (newUser) {
       const hashed = hashPassword(registerReq.email);
-      const appDomain = this.configService.get('app.domain');
-      const appPort = this.configService.get('app.port');
-      const appPrefix = this.configService.get('app.prefix');
-      const appVersion = this.configService.get('app.version');
-      // const verifyUrl = `http://${appDomain}:${appPort}/${appPrefix}/${appVersion}/auth/verify?user_id=${newUser.id.toString()}&token=${hashed}`;
       const verifyUrl = `http://localhost:3000/auth/verify?user_id=${newUser.id.toString()}&token=${hashed}`;
 
       this.mailerService.sendMail({
@@ -199,7 +194,6 @@ export class AuthService {
     if (!user) {
       throw new BadRequestException('Email is not registed.');
     }
-
     // match password
     const checkPass = compare(password, user.hash_password);
     if (!checkPass) {
@@ -209,12 +203,10 @@ export class AuthService {
     if (user.status === 'inactive') {
       throw new BadRequestException('Account is not verified');
     }
-
     const tokens = await this.issueToken({
       sub: user.id,
       is_admin: user.role === UserRole.ADMIN,
     });
-
     await this.userLoginInfoRepository.update(
       { user_id: user.id },
       {
@@ -222,7 +214,6 @@ export class AuthService {
         refresh_token: tokens.refresh_token,
       },
     );
-
     delete user.hash_password;
     return {
       ...new SuccessRes('Login successfully'),

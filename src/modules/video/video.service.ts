@@ -41,15 +41,25 @@ export class VideoService {
   }
 
   // Get paginated videos
-  async getPaginatedVideos(page: number, limit: number) {
-    const skip = (page - 1) * limit;
+  async getPaginatedVideos(page: number, limit: number, seed: number = 1) {
+    const skip = (+page - 1) * +limit;
 
     // Lấy video với phân trang
-    const [videos, total] = await this.videoRepository.findAndCount({
-      skip: skip,
-      take: limit,
-      relations: ['user', 'likes', 'comments'],
-    });
+    const [videos, total] = await this.videoRepository
+      .createQueryBuilder('video')
+      .leftJoinAndSelect('video.user', 'user')
+      .select([
+        'video', // Lấy tất cả các trường của video
+        'user.id', // Chỉ lấy id của user
+        'user.avatar_url', // Chỉ lấy avatar của user
+        'user.username', // Chỉ lấy username của user
+      ])
+      .addSelect('md5(video.id || :seed)', 'random_order') // Tạo cột ngẫu nhiên dựa trên seed
+      .setParameter('seed', seed)
+      .orderBy('random_order')
+      .skip(skip)
+      .take(limit)
+      .getManyAndCount();
 
     return {
       ...new SuccessRes('Get video successfully'),
@@ -74,6 +84,31 @@ export class VideoService {
     return {
       ...new SuccessRes('Get video successfully'),
       data: video,
+    };
+  }
+
+  // get my paginated videos
+  async getMyPaginatedVideos(userId: number, page: number, limit: number) {
+    const skip: number = (+page - 1) * +limit;
+
+    // Lấy video của user với phân trang
+    const [videos, total] = await this.videoRepository.findAndCount({
+      where: { user_id: userId },
+      skip: skip,
+      take: limit,
+      relations: ['likes', 'comments'],
+    });
+
+    return {
+      ...new SuccessRes('Get my video successfully'),
+      data: videos,
+      meta: {
+        totalItems: total,
+        itemCount: videos.length,
+        itemsPerPage: limit,
+        totalPages: Math.ceil(total / limit),
+        currentPage: page,
+      },
     };
   }
 

@@ -4,6 +4,7 @@ import { CreateCommentReq } from './dto/create-comment.req';
 import { SuccessRes } from 'src/common/types/response';
 import { LikesCommentRepository } from 'src/repositories/likes-comment.repository';
 import { PusherService } from '../pusher/pusher.service';
+import { VideoRepository } from 'src/repositories/video.repository';
 
 @Injectable()
 export class CommentService {
@@ -13,6 +14,7 @@ export class CommentService {
     private readonly commentRepository: CommentRepository,
     private readonly likesCommentRepository: LikesCommentRepository,
     private readonly pusherService: PusherService,
+    private readonly videoRepository: VideoRepository,
   ) {}
 
   // get paginated comments by video id
@@ -25,6 +27,7 @@ export class CommentService {
       skip: skip,
       take: limit,
       relations: ['user'],
+      order: { created_at: 'DESC' },
     });
 
     return {
@@ -56,6 +59,14 @@ export class CommentService {
 
     await this.commentRepository.save(newComment);
 
+    // tăng comments_count của video
+    await this.videoRepository.increment({ id: video_id }, 'comments_count', 1);
+
+    const comment = await this.commentRepository.findOne({
+      where: { id: newComment.id },
+      relations: ['user'],
+    });
+
     // Nếu comment này là comment trả lời (có parentId), tăng child_count của comment cha
     if (createCommentReq.parent_id) {
       await this.commentRepository.increment(
@@ -67,12 +78,12 @@ export class CommentService {
 
     this.pusherService.trigger(`video-${video_id}`, 'new-comment', {
       message: 'Có comment mới',
-      Comment: newComment,
+      Comment: comment,
     });
 
     return {
       ...new SuccessRes('Comment video successfully'),
-      data: { newComment },
+      data: { comment },
     };
   }
 
@@ -87,6 +98,13 @@ export class CommentService {
     }
 
     await this.commentRepository.delete(comment_id);
+
+    // giảm comments_count của video
+    await this.videoRepository.decrement(
+      { id: comment.video_id },
+      'comments_count',
+      1,
+    );
 
     // Nếu comment này là comment trả lời (có parentId), giảm child_count của comment cha
     if (comment.parent_id) {
@@ -128,6 +146,7 @@ export class CommentService {
         .set({ likes_count: () => 'likes_count - 1' })
         .where('id = :comment_id', { comment_id })
         .execute();
+
       return {
         ...new SuccessRes('Unlike comment successfully'),
         data: { comment_id, user_id },

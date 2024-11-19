@@ -6,10 +6,17 @@ import { CommentService } from './comment.service';
 import { CommentRepository } from 'src/repositories/comment.repository';
 import { LikesCommentRepository } from 'src/repositories/likes-comment.repository';
 import { LikesComments } from 'src/entities/likes- comments.entity';
+import { Video } from 'src/entities/video.entity';
+import { VideoRepository } from 'src/repositories/video.repository';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Comment, LikesComments])],
+  imports: [TypeOrmModule.forFeature([Comment, LikesComments, Video])],
   controllers: [CommentController],
-  providers: [CommentService, CommentRepository, LikesCommentRepository],
+  providers: [
+    CommentService,
+    CommentRepository,
+    LikesCommentRepository,
+    VideoRepository,
+  ],
 })
 export class CommentModule {}

@@ -51,14 +51,41 @@ export class VideoController {
     summary: 'Get paginated videos',
     description: 'Retrieve videos with pagination',
   })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'page', required: false, type: String })
+  @ApiQuery({ name: 'limit', required: false, type: String })
   @Get()
   async getPaginatedVideos(
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10',
+    @CurrentUser() user: User,
   ) {
-    return await this.videoService.getPaginatedVideos(page, limit);
+    return await this.videoService.getPaginatedVideos(+page, +limit, +user?.id);
+  }
+
+  // get my paginated videos
+  @ApiResponse({
+    status: HttpStatus.OK,
+  })
+  @ApiOperation({
+    operationId: 'get-my-paginated-videos',
+    summary: 'Get my paginated videos',
+    description: 'Retrieve my videos with pagination',
+  })
+  @ApiQuery({ name: 'page', required: false, type: String })
+  @ApiQuery({ name: 'limit', required: false, type: String })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  async getMyPaginatedVideos(
+    @Req() req: any,
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10',
+  ) {
+    return await this.videoService.getMyPaginatedVideos(
+      req.user.id,
+      +page,
+      +limit,
+    );
   }
 
   // get video by id
@@ -73,6 +100,20 @@ export class VideoController {
   @Get(':id')
   async getVideoById(@Param('id', ParseIntPipe) id: number) {
     return await this.videoService.getVideoById(id);
+  }
+
+  // get video by user id
+  @ApiResponse({
+    status: HttpStatus.OK,
+  })
+  @ApiOperation({
+    operationId: 'get-video-by-user-id',
+    summary: 'Get video by user id',
+    description: 'Retrieve video by user id',
+  })
+  @Get('user/:user_id')
+  async getVideoByUserId(@Param('user_id', ParseIntPipe) userId: number) {
+    return await this.videoService.getVideoByUserId(userId);
   }
 
   // Upload Video
@@ -197,20 +238,6 @@ export class VideoController {
   async deleteVideo(@Param('id', ParseIntPipe) id: number, @Body() data: any) {
     await this.cloudinaryService.destroyFileVideo(data.url);
     return await this.videoService.deleteVideo(id);
-  }
-
-  // get video by user id
-  @ApiResponse({
-    status: HttpStatus.OK,
-  })
-  @ApiOperation({
-    operationId: 'get-video-by-user-id',
-    summary: 'Get video by user id',
-    description: 'Retrieve video by user id',
-  })
-  @Get('user/:user_id')
-  async getVideoByUserId(@Param('user_id', ParseIntPipe) userId: number) {
-    return await this.videoService.getVideoByUserId(userId);
   }
 
   // toggle like video

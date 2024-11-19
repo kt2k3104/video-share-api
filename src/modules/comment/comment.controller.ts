@@ -41,8 +41,6 @@ export class CommentController {
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @Get(':videoId')
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   async getComments(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,

@@ -129,7 +129,12 @@ export class UserController {
       await this.userService.updateProfile(req.user.id, {
         avatar_url: cloudFile.secure_url,
       });
-      return new SuccessRes('Upload avatar successfully');
+      return {
+        ...new SuccessRes('Upload avatar successfully'),
+        data: {
+          avatar_url: cloudFile.secure_url,
+        },
+      };
     } catch (error) {
       throw new InternalServerErrorException('Error when upload file');
     }
@@ -161,8 +166,6 @@ export class UserController {
     description: 'Get user by username',
   })
   @Get('username/:username')
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   async getUserByUsername(@Param('username') username: string) {
     return await this.userService.getUserByUsername(username);
   }
