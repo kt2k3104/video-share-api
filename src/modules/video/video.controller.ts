@@ -274,7 +274,8 @@ export class VideoController {
     summary: 'Search video',
     description: 'Search video',
   })
-  @Get('search')
+  @ApiQuery({ name: 'keyword', required: false, type: String })
+  @Post('search')
   async searchVideo(@Query('keyword') keyword: string) {
     return await this.videoService.searchVideo(keyword);
   }

@@ -136,7 +136,7 @@ export class UserService {
     const users = await this.userRepository
       .createQueryBuilder('user')
       .where('user.username LIKE :keyword', { keyword: `%${keyword}%` })
-      .orWhere('user.fullname LIKE :keyword', { keyword: `%${keyword}%` })
+      .orWhere('user.full_name LIKE :keyword', { keyword: `%${keyword}%` })
       .getMany();
 
     return {

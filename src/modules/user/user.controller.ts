@@ -230,7 +230,7 @@ export class UserController {
     summary: 'Search users',
     description: 'Search users',
   })
-  @Get('search')
+  @Post('search')
   async searchUsers(@Query('keyword') keyword: string) {
     return await this.userService.searchUsers(keyword);
   }
@@ -244,10 +244,10 @@ export class UserController {
     summary: 'Follow user',
     description: 'Follow user',
   })
-  @Post(':id/follow')
+  @Post('/follow')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
-  async followUser(@CurrentUser() user: User, @Param('id') id: number) {
+  async followUser(@CurrentUser() user: User, @Body() { id }: { id: number }) {
     return await this.userService.followUser(user.id, id);
   }
 
@@ -260,10 +260,13 @@ export class UserController {
     summary: 'Unfollow user',
     description: 'Unfollow user',
   })
-  @Post(':id/unfollow')
+  @Post('/unfollow')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
-  async unfollowUser(@CurrentUser() user: User, @Param('id') id: number) {
+  async unfollowUser(
+    @CurrentUser() user: User,
+    @Body() { id }: { id: number },
+  ) {
     return await this.userService.unfollowUser(user.id, id);
   }
 

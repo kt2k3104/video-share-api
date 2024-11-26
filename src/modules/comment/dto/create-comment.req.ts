@@ -9,6 +9,11 @@ import {
 import { IsExisted } from 'src/common/validator/existed.validation';
 
 export class CreateCommentReq {
+  // @ApiProperty({ type: Number, required: true })
+  // @IsInt()
+  // @IsNotEmpty()
+  // video_id: number; // ID của video mà comment này thuộc về
+
   @ApiProperty({ type: String, required: true })
   @IsString()
   @IsNotEmpty()

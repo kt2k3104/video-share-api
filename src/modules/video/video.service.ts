@@ -216,7 +216,7 @@ export class VideoService {
   async searchVideo(keyword: string) {
     const videos = await this.videoRepository
       .createQueryBuilder('video')
-      .where('video.title ILIKE :keyword', { keyword: `%${keyword}%` })
+      .where('video.title ILIKE :keyword', { keyword: `${keyword}%` })
       .getMany();
 
     return {
