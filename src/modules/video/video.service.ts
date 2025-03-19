@@ -41,34 +41,86 @@ export class VideoService {
   }
 
   // Get paginated videos
+  // async getPaginatedVideos(page: number, limit: number, seed: number = 1) {
+  //   const skip = (+page - 1) * +limit;
+
+  //   // Lấy video với phân trang
+  //   const [videos, total] = await this.videoRepository
+  //     .createQueryBuilder('video')
+  //     .leftJoinAndSelect('video.user', 'user')
+  //     .leftJoin('likes', 'likes', 'likes.video_id = video.id') // Tham gia bảng likes
+  //     .select([
+  //       'video', // Lấy tất cả các trường của video
+  //       'user.id', // Chỉ lấy id của user
+  //       'user.avatar_url', // Chỉ lấy avatar của user
+  //       'user.username', // Chỉ lấy username của user
+  //     ])
+  //     .addSelect('ARRAY_AGG(DISTINCT likes.user_id)', 'liked_user_ids') // Thu thập danh sách user_id đã like
+  //     .addSelect('md5(video.id || :seed)', 'random_order') // Tạo cột ngẫu nhiên dựa trên seed
+  //     .setParameter('seed', seed)
+  //     .groupBy('video.id, user.id') // Nhóm theo video.id và user.id để dùng ARRAY_AGG
+  //     .orderBy('random_order')
+  //     .skip(skip)
+  //     .take(limit)
+  //     .getManyAndCount();
+
+  //   return {
+  //     ...new SuccessRes('Get video successfully'),
+  //     data: videos,
+  //     meta: {
+  //       totalItems: total,
+  //       itemCount: videos.length,
+  //       itemsPerPage: limit,
+  //       totalPages: Math.ceil(total / limit),
+  //       currentPage: page,
+  //     },
+  //   };
+  // }
+  // Get paginated videos
   async getPaginatedVideos(page: number, limit: number, seed: number = 1) {
     const skip = (+page - 1) * +limit;
 
-    // Lấy video với phân trang
-    const [videos, total] = await this.videoRepository
+    // Sử dụng getRawAndEntities để lấy dữ liệu
+    const result = await this.videoRepository
       .createQueryBuilder('video')
-      .leftJoinAndSelect('video.user', 'user')
+      .leftJoinAndSelect('video.user', 'user') // Join để lấy thông tin user của video
+      .leftJoin('likes', 'likes', 'likes.video_id = video.id') // Join bảng likes
       .select([
         'video', // Lấy tất cả các trường của video
         'user.id', // Chỉ lấy id của user
         'user.avatar_url', // Chỉ lấy avatar của user
         'user.username', // Chỉ lấy username của user
+        'likes.user_id AS liked_user_id', // Lấy user_id từ bảng likes
       ])
-      .addSelect('md5(video.id || :seed)', 'random_order') // Tạo cột ngẫu nhiên dựa trên seed
+      .addSelect('md5(video.id || :seed)', 'random_order') // Random order dựa trên seed
       .setParameter('seed', seed)
       .orderBy('random_order')
       .skip(skip)
       .take(limit)
-      .getManyAndCount();
+      .getRawAndEntities();
+
+    // Tách dữ liệu từ kết quả trả về
+    const { raw, entities } = result;
+
+    // Kết hợp dữ liệu raw và entities để ánh xạ likedUserIds
+    const videos = entities.map((video) => {
+      const likedUserIds = raw
+        .filter((row) => row.video_id === video.id) // Lọc các hàng thuộc video hiện tại
+        .map((row) => row.liked_user_id); // Lấy danh sách user_id đã like
+      return {
+        ...video,
+        likedUserIds: likedUserIds[0] === null ? [] : likedUserIds, // Nếu likedUserIds là null thì trả về mảng rỗng
+      };
+    });
 
     return {
       ...new SuccessRes('Get video successfully'),
       data: videos,
       meta: {
-        totalItems: total,
+        totalItems: entities.length,
         itemCount: videos.length,
         itemsPerPage: limit,
-        totalPages: Math.ceil(total / limit),
+        totalPages: Math.ceil(entities.length / limit),
         currentPage: page,
       },
     };
